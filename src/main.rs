@@ -9,28 +9,23 @@ use std::io::Write;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // S'assurer que le dossier logs/ existe
     if !Path::new("logs").exists() {
         std::fs::create_dir("logs")?;
     }
 
     let log_path = "logs/server.log";
 
-    // Création (ou ouverture) du fichier de log
+    // Création fichier de log
     let file = OpenOptions::new()
         .create(true)
         .append(true)
         .open(log_path)?;
-
-    // Mutex pour protéger l'accès concurrent au fichier
     let log_file = Arc::new(Mutex::new(file));
 
-    // Création d'un serveur TCP sur le port 8080
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
     println!("Serveur en écoute sur 127.0.0.1:8080...");
 
     loop {
-        // Accepter une connexion client
         let (socket, addr) = listener.accept().await?;
         println!("Connexion de : {}", addr);
 
@@ -44,7 +39,6 @@ async fn main() -> std::io::Result<()> {
     }
 }
 
-// Gestion d'un client
 async fn handle_client(stream: TcpStream, log_file: Arc<Mutex<std::fs::File>>) -> std::io::Result<()> {
     let reader = BufReader::new(stream);
     let mut lines = reader.lines();
